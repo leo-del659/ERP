@@ -1,0 +1,69 @@
+# ============================================================
+# 可选组件叠加编排：Redis 缓存 + RabbitMQ 异步消息（库存预警）
+#
+# 用法（需与主编排叠加）：
+#   docker compose -f docker-compose.yml -f docker-compose.full.yml up -d --build
+#
+# 说明：故意不使用 docker-compose.override.yml —— 该文件会被自动加载，
+#       将使可选组件变成强制启动。本文件需显式指定 -f 才会生效。
+# ============================================================
+services:
+  # ---------- Redis（缓存 / 幂等锁） ----------
+  redis:
+    image: redis:7-alpine
+    container_name: erp-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - erp-net
+
+  # ---------- RabbitMQ（异步库存预警消息总线） ----------
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: erp-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      # 管理控制台：http://localhost:15672
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    networks:
+      - erp-net
+
+  # ---------- 后端：注入可选组件连接配置 ----------
+  backend:
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      Redis__Connection: "redis:6379"
+      RabbitMQ__Host: "rabbitmq"
+      RabbitMQ__Port: "${RABBITMQ_PORT:-5672}"
+      RabbitMQ__User: ${RABBITMQ_USER:-guest}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD:-guest}
+
+volumes:
+  redis-data:
+  rabbitmq-data:

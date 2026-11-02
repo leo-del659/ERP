@@ -1,0 +1,269 @@
+/* ===================================================================
+ * ERP 管理后台 · 设计令牌与全局美化样式
+ * 调色板：深蓝(企业级) + 中性灰，强调色 #2f54eb
+ * 此文件在 element-plus 基础样式之后引入，用于覆盖组件默认变量
+ * =================================================================== */
+
+:root {
+  /* 主色系（Element Plus 变量覆盖） */
+  --el-color-primary: #2f54eb;
+  --el-color-primary-light-3: #6d87f1;
+  --el-color-primary-light-5: #97aaf5;
+  --el-color-primary-light-7: #c0ccf8;
+  --el-color-primary-light-8: #d5ddfa;
+  --el-color-primary-light-9: #e9effd;
+  --el-color-primary-dark-2: #2643bc;
+
+  /* 中性与圆角 */
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 6px;
+  --el-font-size-base: 14px;
+  --el-text-color-regular: #4b5563;
+
+  /* 应用级令牌 */
+  --erp-side-width: 232px;
+  --erp-side-width-collapsed: 64px;
+  --erp-header-height: 56px;
+  --erp-bg: #f0f2f5;
+  --erp-side-grad: linear-gradient(180deg, #0f1b3d 0%, #12245a 55%, #16317e 100%);
+  --erp-side-text: #c9d3e6;
+  --erp-side-text-active: #ffffff;
+  --erp-accent: #4d7bff;
+  --erp-shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.06);
+  --erp-shadow-md: 0 6px 20px rgba(15, 23, 42, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  color: #303133;
+  background: var(--erp-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 全局细滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.35);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 通用卡片 ---------- */
+.page-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: var(--erp-shadow-sm);
+  border: 1px solid #eef0f4;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.toolbar .left,
+.toolbar .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 路由切换过渡 ---------- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* 让 el-table 圆角卡片观感更统一 */
+.el-table {
+  --el-table-border-color: #eef0f4;
+  --el-table-header-bg-color: #f7f9fc;
+}
+.el-table th.el-table__cell {
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* 主按钮更挺括 */
+.el-button--primary {
+  box-shadow: 0 2px 6px rgba(47, 84, 235, 0.28);
+}
+
+/* 输入框聚焦高亮 */
+.el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset,
+    0 0 0 3px var(--el-color-primary-light-8);
+}
+
+/* ===================================================================
+ * 统一分页组件（ErpPagination → .erp-pager）
+ * 视觉：白色圆角条 + 药丸页码；悬停浮起、选中实心主色
+ * 布局：左「共 N 条」、右「条数/翻页/跳页/第 X / Y 页」，小屏自动换行居中
+ * =================================================================== */
+.erp-pager {
+  --el-pagination-bg-color: #f5f7fb;
+  --el-pagination-text-color: #5b6577;
+  --el-pagination-button-disabled-color: #c0c4cc;
+  --el-pagination-button-disabled-bg-color: #f5f7fb;
+  --el-pagination-hover-color: var(--el-color-primary);
+
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 8px;
+  justify-content: flex-end;
+}
+
+/* 「共 N 条」固定左侧，其余控件靠右，间距统一 */
+.erp-pager .el-pagination__total {
+  margin-right: auto;
+  color: #6b7280;
+  font-size: 13px;
+}
+.erp-pager .el-pagination__sizes {
+  margin: 0 8px 0 12px;
+}
+.erp-pager .el-pagination__jump {
+  margin-left: 12px;
+  color: #6b7280;
+  font-size: 13px;
+}
+.erp-pager .el-pagination__jump .el-input__wrapper {
+  width: 56px;
+}
+.erp-pager .el-pagination__goto {
+  font-size: 13px;
+}
+
+/* 上一页 / 下一页：箭头 + 文案，标识更直观 */
+.erp-pager .btn-prev,
+.erp-pager .btn-next {
+  border-radius: 8px;
+  background: var(--el-pagination-bg-color);
+  padding: 0 10px;
+  transition: background 0.15s, color 0.15s;
+}
+.erp-pager .btn-prev:not(:disabled):hover,
+.erp-pager .btn-next:not(:disabled):hover {
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+.erp-pager .btn-prev::after {
+  content: '上一页';
+  margin-left: 4px;
+  font-size: 12px;
+}
+.erp-pager .btn-next::after {
+  content: '下一页';
+  margin-right: 0;
+  margin-left: 4px;
+  font-size: 12px;
+}
+.erp-pager .btn-prev.el-pagination__prev i + span,
+.erp-pager .btn-next i + span {
+  display: inline;
+}
+
+/* 页码药丸按钮 */
+.erp-pager .el-pager li {
+  min-width: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin: 0 3px;
+  border-radius: 8px;
+  background: var(--el-pagination-bg-color);
+  color: var(--el-pagination-text-color);
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.erp-pager .el-pager li:hover {
+  color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+  transform: translateY(-1px);
+}
+.erp-pager .el-pager li.is-active {
+  background: var(--el-color-primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(47, 84, 235, 0.35);
+  transform: none;
+}
+.erp-pager .el-pager li.btn-quicknext:hover,
+.erp-pager .el-pager li.btn-quickprev:hover {
+  color: var(--el-color-primary);
+}
+
+/* 第 X / Y 页 信息 */
+.erp-pager .erp-pager-pages {
+  margin-left: 12px;
+  font-size: 13px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.erp-pager .erp-pager-pages::first-letter {
+  color: inherit;
+}
+
+/* 响应式：窄屏换行居中，隐藏次要文案 */
+@media (max-width: 768px) {
+  .erp-pager {
+    justify-content: center;
+    padding: 8px 10px;
+  }
+  .erp-pager .el-pagination__total {
+    width: 100%;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .erp-pager .btn-prev::after,
+  .erp-pager .btn-next::after {
+    display: none;
+  }
+  .erp-pager .el-pagination__jump {
+    display: none;
+  }
+  .erp-pager .erp-pager-pages {
+    width: 100%;
+    text-align: center;
+    margin: 4px 0 0;
+  }
+}

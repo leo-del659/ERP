@@ -1,0 +1,12 @@
+# 编译输出
+**/bin
+**/obj
+.vs
+
+# 含真实密钥的配置文件：严禁打包进镜像（使用 appsettings.example.json 作基础）
+Demo.Api.Admin/appsettings.json
+Demo.Api.Admin/appsettings.Development.json
+
+# 运行期生成目录
+Demo.Api.Admin/logs
+Demo.Api.Admin/uploads

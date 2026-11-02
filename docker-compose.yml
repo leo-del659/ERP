@@ -1,0 +1,76 @@
+# ERP 系统 Docker Compose 编排
+# 服务：mysql（数据库 + 自动初始化）→ backend（.NET API）→ frontend（Vue + Nginx）
+# 变量：所有密码与密钥均从根目录 .env 注入（模板见 .env.example）
+# 说明：Redis / RabbitMQ 在默认配置下被优雅禁用，无需启动即可运行；
+#       如需启用异步库存预警，使用叠加编排 docker-compose.full.yml。
+
+services:
+  # ---------- MySQL 数据库 ----------
+  mysql:
+    image: mysql:8.0
+    container_name: erp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-erp_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-erp_db}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # 首次启动（数据卷为空时）自动导入 102 张表与初始数据
+      - ./SqlScript/erp_db.sql:/docker-entrypoint-initdb.d/erp_db.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-erp_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks:
+      - erp-net
+
+  # ---------- 后端 API（.NET 9） ----------
+  backend:
+    build:
+      context: ./Demo
+      dockerfile: Dockerfile
+    container_name: erp-backend
+    restart: unless-stopped
+    environment:
+      # Development 环境用于演示 Swagger；生产部署请改为 Production 并关闭 Swagger
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      # 连接串指向 compose 内的 mysql 服务（环境变量覆盖镜像内 appsettings 的占位值）
+      ConnectionStrings__ErpDb: "Server=mysql;Port=3306;User Id=${MYSQL_ROOT_USER:-root};Password=${MYSQL_ROOT_PASSWORD:-erp_password};Database=${MYSQL_DATABASE:-erp_db};SslMode=None;AllowPublicKeyRetrieval=true"
+      Jwt__SecretKey: ${JWT_SECRET_KEY:-docker-demo-jwt-secret-key-change-me-32bytes-01}
+      Jwt__Issuer: ${JWT_ISSUER:-erp.demo}
+      Jwt__Audience: ${JWT_AUDIENCE:-erp.web}
+      Jwt__ExpiresMinutes: ${JWT_EXPIRES_MINUTES:-480}
+      Login__Keys: ${LOGIN_PEPPER:-erp-pepper}
+      Pay__Secret: ${PAY_SECRET:-erp-pay-secret}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - erp-net
+
+  # ---------- 前端（Vue 3 + Nginx） ----------
+  frontend:
+    build:
+      context: ./Demoue/vite-project
+      dockerfile: Dockerfile
+    container_name: erp-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+    depends_on:
+      - backend
+    networks:
+      - erp-net
+
+volumes:
+  mysql-data:
+
+networks:
+  erp-net:
+    driver: bridge
