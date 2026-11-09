@@ -14,7 +14,7 @@ const router = createRouter({
     {
       path: '/',
       component: AdminLayout,
-      redirect: '/dashboard',
+      redirect: '/login',
       children: [
         { path: 'dashboard', name: 'dashboard', component: () => import('@/views/dashboard/index.vue'), meta: { title: '决策看板' } },
         // 库存

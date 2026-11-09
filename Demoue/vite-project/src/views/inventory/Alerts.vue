@@ -12,7 +12,7 @@
     <el-table :data="rows" v-loading="loading" border stripe size="small">
       <el-table-column prop="materialCode" label="物料编码" width="150" />
       <el-table-column prop="materialName" label="物料名称" min-width="180" show-overflow-tooltip />
-      <el-table-column prop="warehouseId" label="仓库ID" width="110" />
+      <el-table-column prop="warehouseName" label="仓库" width="140" show-overflow-tooltip />
       <el-table-column prop="currentQty" label="现存量" width="110" align="right">
         <template #default="{ row }">
           <span style="color: #f56c6c; font-weight: 600">{{ row.currentQty }}</span>
@@ -38,6 +38,7 @@ interface AlertRow {
   materialCode: string
   materialName: string
   warehouseId: number
+  warehouseName: string
   currentQty: number
   safetyStock: number
 }

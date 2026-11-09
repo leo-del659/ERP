@@ -213,7 +213,20 @@ public class Inventory_Service : I_Inventory_Service
                 || _db.MdWarehouses.Any(w => w.Id == d.WarehouseId && w.WarehouseName.Contains(k)));
         }
         var total = await q.CountAsync();
-        var rows = await q.OrderByDescending(d => d.Id).Skip((req.SafePage - 1) * req.SafeSize).Take(req.SafeSize).ToListAsync();
+        var rows = await (from d in q
+                          join m in _db.MdMaterials on d.MaterialId equals m.Id into mg
+                          from m in mg.DefaultIfEmpty()
+                          join w in _db.MdWarehouses on d.WarehouseId equals w.Id into wg
+                          from w in wg.DefaultIfEmpty()
+                          orderby d.Id descending
+                          select new
+                          {
+                              d.Id, d.TransNo, d.MaterialId, d.WarehouseId, d.TransType, d.Direction,
+                              d.Quantity, d.BeforeQty, d.AfterQty, d.SourceNo, d.TransTime,
+                              MaterialName = m.MaterialName ?? "",
+                              WarehouseName = w.WarehouseName ?? ""
+                          })
+                         .Skip((req.SafePage - 1) * req.SafeSize).Take(req.SafeSize).ToListAsync();
         return new Page_Result { total = total, rows = rows };
     }
 
@@ -221,8 +234,9 @@ public class Inventory_Service : I_Inventory_Service
     {
         var rows = await (from s in _db.InvStocks
                           join m in _db.MdMaterials on s.MaterialId equals m.Id
+                          join w in _db.MdWarehouses on s.WarehouseId equals w.Id
                           where m.SafetyStock != null && s.CurrentQty < m.SafetyStock
-                          select new { m.MaterialCode, m.MaterialName, s.WarehouseId, s.CurrentQty, m.SafetyStock }).ToListAsync();
+                          select new { m.MaterialCode, m.MaterialName, s.WarehouseId, s.CurrentQty, m.SafetyStock, WarehouseName = w.WarehouseName }).ToListAsync();
         return rows;
     }
 

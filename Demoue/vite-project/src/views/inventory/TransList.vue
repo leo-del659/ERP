@@ -31,8 +31,8 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column prop="materialId" label="物料ID" width="100" />
-      <el-table-column prop="warehouseId" label="仓库ID" width="100" />
+      <el-table-column prop="materialName" label="物料" min-width="160" show-overflow-tooltip />
+      <el-table-column prop="warehouseName" label="仓库" min-width="140" show-overflow-tooltip />
       <el-table-column prop="quantity" label="变动数量" width="110" align="right" />
       <el-table-column prop="beforeQty" label="变动前" width="100" align="right" />
       <el-table-column prop="afterQty" label="变动后" width="100" align="right" />
